@@ -37,7 +37,7 @@ jobs:
         git config --global core.filemode false
         git config --global core.longpaths true
     - name: Checkout
-      uses: actions/checkout@v4.1.0
+      uses: actions/checkout@v7
     - name: Prepare Environment
       run: ".github/workflows/prepare.ps1"
       shell: pwsh
@@ -51,7 +51,7 @@ jobs:
     - name: Restore NuGet Packages
       run: nuget restore ${{ github.workspace }}\src\${{ env._RELEASE_NAME }}.sln
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.3.2
+      uses: microsoft/setup-msbuild@v3
     - name: Run MSBuild
       run: msbuild ${{ github.workspace }}\src\${{ env._RELEASE_NAME }}.sln /p:WindowsTargetPlatformVersion=10.0.19041.0 /m -p:Configuration=${{ env._RELEASE_CONFIGURATION }} -p:Platform="Any CPU"
     - name: Package the release
@@ -59,21 +59,21 @@ jobs:
       shell: pwsh
     - name: Publish PR artifacts
       if: env._IS_GITHUB_RELEASE == 'false' && success()
-      uses: actions/upload-artifact@v4.0.0
+      uses: actions/upload-artifact@v7
       with:
         name: "${{ env._RELEASE_NAME }}-${{ env._RELEASE_VERSION }}"
         path: ".dist/*.zip"
     - name: VirusTotal Scan
       id: vt-scan
       if: env._IS_GITHUB_RELEASE == 'true' && success()
-      uses: crazy-max/ghaction-virustotal@v4
+      uses: crazy-max/ghaction-virustotal@v5
       with:
         vt_api_key: ${{ secrets._VT_API_KEY }}
         files: ".dist/*.zip"
     - name: Parse VirusTotal Results
       id: vt-res
       if: env._IS_GITHUB_RELEASE == 'true' && success()
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         result-encoding: string
         script: |
